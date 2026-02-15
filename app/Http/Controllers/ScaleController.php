@@ -10,31 +10,9 @@ use Inertia\Response;
 
 class ScaleController extends Controller
 {
-    private const COUNTRY_MAP = [
-        'GR' => 'Greece',
-        'US' => 'United States',
-        'GB' => 'United Kingdom',
-        'DE' => 'Germany',
-        'FR' => 'France',
-        'IT' => 'Italy',
-        'ES' => 'Spain',
-        'PT' => 'Portugal',
-        'CY' => 'Cyprus',
-        'NL' => 'Netherlands',
-        'BE' => 'Belgium',
-        'AT' => 'Austria',
-        'IE' => 'Ireland',
-        'SE' => 'Sweden',
-        'DK' => 'Denmark',
-        'FI' => 'Finland',
-        'NO' => 'Norway',
-        'CH' => 'Switzerland',
-        'PL' => 'Poland',
-        'CZ' => 'Czech Republic',
-        'RO' => 'Romania',
-        'BG' => 'Bulgaria',
-        'HR' => 'Croatia',
-        'HU' => 'Hungary',
+    private const COUNTRY_CODES = [
+        'GR', 'US', 'GB', 'DE', 'FR', 'IT', 'ES', 'PT', 'CY', 'NL', 'BE', 'AT',
+        'IE', 'SE', 'DK', 'FI', 'NO', 'CH', 'PL', 'CZ', 'RO', 'BG', 'HR', 'HU',
     ];
 
     public function index(): Response
@@ -46,7 +24,7 @@ class ScaleController extends Controller
                 ->orderByDesc('is_active')
                 ->orderByDesc('updated_at')
                 ->get(),
-            'availableCountries' => self::COUNTRY_MAP,
+            'availableCountries' => $this->availableCountries(),
         ]);
     }
 
@@ -60,7 +38,7 @@ class ScaleController extends Controller
 
         TaxScale::create($validated);
 
-        return redirect()->route('admin.scales.index')->with('success', 'Scale created.');
+        return redirect()->route('admin.scales.index')->with('success', __('messages.scale_created'));
     }
 
     public function show(TaxScale $scale): Response
@@ -69,7 +47,7 @@ class ScaleController extends Controller
 
         return Inertia::render('Admin/Scales/Edit', [
             'scale' => $scale,
-            'availableCountries' => self::COUNTRY_MAP,
+            'availableCountries' => $this->availableCountries(),
         ]);
     }
 
@@ -83,20 +61,36 @@ class ScaleController extends Controller
 
         $scale->update($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Scale updated.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.scale_updated'));
     }
 
     public function destroy(TaxScale $scale): RedirectResponse
     {
         $scale->delete();
 
-        return redirect()->route('admin.scales.index')->with('success', 'Scale deleted.');
+        return redirect()->route('admin.scales.index')->with('success', __('messages.scale_deleted'));
     }
 
     public function activate(TaxScale $scale): RedirectResponse
     {
         TaxScale::activateOnly($scale->id);
 
-        return redirect()->route('admin.scales.index')->with('success', "'{$scale->name}' is now the active scale.");
+        return redirect()->route('admin.scales.index')->with(
+            'success',
+            __('messages.scale_activated', ['name' => $scale->name])
+        );
+    }
+
+    private function availableCountries(): array
+    {
+        $countries = [];
+
+        foreach (self::COUNTRY_CODES as $code) {
+            $translationKey = "countries.$code";
+            $translated = __($translationKey);
+            $countries[$code] = $translated === $translationKey ? $code : $translated;
+        }
+
+        return $countries;
     }
 }

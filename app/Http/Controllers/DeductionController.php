@@ -18,7 +18,7 @@ class DeductionController extends Controller
 
         $scale->deductions()->create($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Deduction added.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.deduction_added'));
     }
 
     public function update(Request $request, TaxScale $scale, Deduction $deduction): RedirectResponse
@@ -30,13 +30,13 @@ class DeductionController extends Controller
 
         $deduction->update($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Deduction updated.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.deduction_updated'));
     }
 
     public function destroy(TaxScale $scale, Deduction $deduction): RedirectResponse
     {
         $deduction->delete();
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Deduction deleted.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.deduction_deleted'));
     }
 }

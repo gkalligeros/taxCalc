@@ -19,7 +19,7 @@ class BracketController extends Controller
 
         $scale->brackets()->create($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Bracket added.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.bracket_added'));
     }
 
     public function update(Request $request, TaxScale $scale, TaxBracket $bracket): RedirectResponse
@@ -32,13 +32,13 @@ class BracketController extends Controller
 
         $bracket->update($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Bracket updated.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.bracket_updated'));
     }
 
     public function destroy(TaxScale $scale, TaxBracket $bracket): RedirectResponse
     {
         $bracket->delete();
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Bracket deleted.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.bracket_deleted'));
     }
 }

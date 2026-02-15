@@ -1,0 +1,39 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment
+.env
+.env.*
+!.env.example
+.phpunit.result.cache
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build / frontend artifacts
+/public/hot
+/public/build
+/node_modules/.vite/
+
+# Laravel runtime files
+/storage/*.key
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/testing/
+/storage/framework/views/
+/bootstrap/cache/*.php
+
+# Test / coverage outputs
+/coverage/
+/.phpunit.cache/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'GR' => 'Greece',
+    'US' => 'United States',
+    'GB' => 'United Kingdom',
+    'DE' => 'Germany',
+    'FR' => 'France',
+    'IT' => 'Italy',
+    'ES' => 'Spain',
+    'PT' => 'Portugal',
+    'CY' => 'Cyprus',
+    'NL' => 'Netherlands',
+    'BE' => 'Belgium',
+    'AT' => 'Austria',
+    'IE' => 'Ireland',
+    'SE' => 'Sweden',
+    'DK' => 'Denmark',
+    'FI' => 'Finland',
+    'NO' => 'Norway',
+    'CH' => 'Switzerland',
+    'PL' => 'Poland',
+    'CZ' => 'Czech Republic',
+    'RO' => 'Romania',
+    'BG' => 'Bulgaria',
+    'HR' => 'Croatia',
+    'HU' => 'Hungary',
+];

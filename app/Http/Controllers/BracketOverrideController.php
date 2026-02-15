@@ -22,7 +22,7 @@ class BracketOverrideController extends Controller
 
         $bracket->overrides()->create($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Override added.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.override_added'));
     }
 
     public function update(Request $request, TaxScale $scale, TaxBracket $bracket, TaxBracketOverride $override): RedirectResponse
@@ -37,13 +37,13 @@ class BracketOverrideController extends Controller
 
         $override->update($validated);
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Override updated.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.override_updated'));
     }
 
     public function destroy(TaxScale $scale, TaxBracket $bracket, TaxBracketOverride $override): RedirectResponse
     {
         $override->delete();
 
-        return redirect()->route('admin.scales.show', $scale)->with('success', 'Override deleted.');
+        return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.override_deleted'));
     }
 }
