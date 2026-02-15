@@ -118,6 +118,9 @@
                         {{ loading ? t('calculating') : t('calculate') }}
                     </button>
                 </div>
+                <div v-if="apiError" class="mt-3 text-sm text-red-600">
+                    {{ apiError }}
+                </div>
             </div>
 
             <div v-if="result" class="space-y-4">
@@ -168,9 +171,26 @@
                     </div>
                 </div>
 
-                <div v-if="result.deductions_breakdown.length" class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div v-if="result?.deductions_breakdown?.length" class="bg-white rounded-lg shadow p-4 sm:p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ t('deductions_breakdown') }}</h2>
-                    <div class="overflow-x-auto">
+                    <div class="space-y-2 md:hidden">
+                        <div
+                            v-for="d in result.deductions_breakdown"
+                            :key="`mobile-${d.name}`"
+                            class="border border-gray-200 rounded-lg p-3"
+                        >
+                            <div class="font-medium text-gray-800">{{ d.name }}</div>
+                            <div class="mt-1 flex justify-between text-sm text-gray-600">
+                                <span>{{ t('rate') }}</span>
+                                <span>{{ (d.rate * 100).toFixed(2) }}%</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>{{ t('amount') }}</span>
+                                <span class="font-semibold text-gray-800">&euro;{{ formatNumber(d.amount) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm min-w-[420px]">
                             <thead>
                                 <tr class="border-b">
@@ -190,9 +210,41 @@
                     </div>
                 </div>
 
-                <div v-if="result.tax_breakdown.length" class="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div v-if="result?.tax_breakdown?.length" class="bg-white rounded-lg shadow p-4 sm:p-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ t('tax_brackets_breakdown') }}</h2>
-                    <div class="overflow-x-auto">
+                    <div class="space-y-2 md:hidden">
+                        <div
+                            v-for="(b, i) in result.tax_breakdown"
+                            :key="`mobile-tax-${i}`"
+                            class="border border-gray-200 rounded-lg p-3"
+                        >
+                            <div class="font-medium text-gray-800">
+                                &euro;{{ formatNumber(b.min) }}
+                                &ndash;
+                                <span v-if="b.max">&euro;{{ formatNumber(b.max) }}</span>
+                                <span v-else>&infin;</span>
+                            </div>
+                            <div class="mt-1 flex justify-between text-sm text-gray-600">
+                                <span>{{ t('base_rate') }}</span>
+                                <span>{{ (b.base_rate * 100).toFixed(0) }}%</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>{{ t('effective_rate') }}</span>
+                                <span :class="b.rate !== b.base_rate ? 'text-green-600 font-semibold' : ''">
+                                    {{ (b.rate * 100).toFixed(0) }}%
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>{{ t('taxable_amount') }}</span>
+                                <span>&euro;{{ formatNumber(b.taxable_amount) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>{{ t('tax') }}</span>
+                                <span class="font-semibold text-gray-800">&euro;{{ formatNumber(b.tax) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm min-w-[720px]">
                             <thead>
                                 <tr class="border-b">
@@ -251,6 +303,7 @@ const mode = ref('gross_to_net');
 const amount = ref(null);
 const result = ref(null);
 const loading = ref(false);
+const apiError = ref('');
 const selectedSalariesPerYear = ref(Number(props.activeScale?.salaries_per_year ?? 12));
 const salariesPerYear = computed(() => selectedSalariesPerYear.value);
 const inputLabel = computed(() => (
@@ -283,6 +336,7 @@ async function calculate() {
     try {
         const payload = {
             mode: mode.value,
+            amount: amount.value,
             country_code: selectedCountry.value,
             state: selectedState.value,
             age: age.value,
@@ -302,11 +356,24 @@ async function calculate() {
         });
         const data = await res.json();
 
+        if (!res.ok) {
+            if (requestId === latestRequestId) {
+                result.value = null;
+                apiError.value = data?.message || 'Calculation failed.';
+            }
+            return;
+        }
+
         if (requestId === latestRequestId) {
             result.value = data;
+            apiError.value = '';
         }
     } catch (e) {
         console.error(e);
+        if (requestId === latestRequestId) {
+            result.value = null;
+            apiError.value = 'Calculation failed.';
+        }
     } finally {
         if (requestId === latestRequestId) {
             loading.value = false;
@@ -321,6 +388,7 @@ function scheduleAutoCalculate() {
 
     if (!amount.value || amount.value <= 0) {
         result.value = null;
+        apiError.value = '';
         loading.value = false;
         return;
     }
