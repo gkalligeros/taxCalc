@@ -23,12 +23,15 @@ return [
     'dependent_children' => 'Εξαρτώμενα Παιδιά',
 
     'using_tax_scale' => 'Χρήση φορολογικής κλίμακας: :name',
-    'no_active_scale' => 'Δεν έχει οριστεί ενεργή φορολογική κλίμακα για αυτήν την περιοχή. Ορίστε μία από τον πίνακα διαχείρισης.',
+    'no_active_scale' => 'Δεν έχει οριστεί ενεργή φορολογική κλίμακα για αυτήν την περιοχή. Προσθέστε μία μέσω seeding στη βάση δεδομένων.',
 
     'annual_gross_salary' => 'Ετήσιος Μικτός Μισθός',
+    'target_annual_net_salary' => 'Στόχος Ετήσιου Καθαρού Μισθού',
     'salary_example_placeholder' => 'π.χ. 30000',
     'calculating' => 'Υπολογισμός...',
     'calculate' => 'Υπολογισμός',
+    'gross_to_net' => 'Μικτός σε Καθαρό',
+    'net_to_gross' => 'Καθαρός σε Μικτό',
 
     'summary' => 'Σύνοψη',
     'gross_salary' => 'Μικτός Μισθός',
@@ -71,6 +74,9 @@ return [
 
     'scale_details' => 'Στοιχεία Κλίμακας',
     'name' => 'Όνομα',
+    'salaries_per_year' => 'Μισθοί ανά Έτος',
+    'salary_division_12' => '12 μισθοί',
+    'salary_division_14' => '14 μισθοί',
     'save' => 'Αποθήκευση',
     'tax_brackets' => 'Φορολογικά Κλιμάκια',
     'min_amount_eur' => 'Ελάχιστο Ποσό (EUR)',

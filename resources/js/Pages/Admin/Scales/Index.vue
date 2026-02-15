@@ -39,12 +39,21 @@
                         />
                         <select
                             v-model="newScale.country_code"
+                            @change="onCreateCountryChange"
                             class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                             required
                         >
                             <option v-for="(name, code) in availableCountries" :key="code" :value="code">
                                 {{ code }} - {{ name }}
                             </option>
+                        </select>
+                        <select
+                            v-model.number="newScale.salaries_per_year"
+                            class="w-36 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            required
+                        >
+                            <option :value="12">{{ t('salary_division_12') }}</option>
+                            <option :value="14">{{ t('salary_division_14') }}</option>
                         </select>
                         <input
                             v-model="newScale.state"
@@ -81,7 +90,7 @@
                             </span>
                         </div>
                         <div class="text-sm text-gray-500 mt-1">
-                            {{ scale.brackets_count }} {{ t('brackets_label') }} &middot; {{ scale.deductions_count }} {{ t('deductions_label') }}
+                            {{ scale.brackets_count }} {{ t('brackets_label') }} &middot; {{ scale.deductions_count }} {{ t('deductions_label') }} &middot; {{ scale.salaries_per_year }}x
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -126,15 +135,24 @@ defineProps({
 });
 
 const { locale, supportedLocales, t, switchLocale } = useI18n();
-const newScale = ref({ name: '', country_code: 'GR', state: '' });
+const newScale = ref({ name: '', country_code: 'GR', salaries_per_year: 14, state: '' });
+
+function defaultSalariesForCountry(countryCode) {
+    return countryCode === 'GR' ? 14 : 12;
+}
+
+function onCreateCountryChange() {
+    newScale.value.salaries_per_year = defaultSalariesForCountry(newScale.value.country_code);
+}
 
 function createScale() {
     router.post('/admin/scales', {
         name: newScale.value.name,
         country_code: newScale.value.country_code,
+        salaries_per_year: newScale.value.salaries_per_year,
         state: newScale.value.state || null,
     }, {
-        onSuccess: () => { newScale.value = { name: '', country_code: 'GR', state: '' }; },
+        onSuccess: () => { newScale.value = { name: '', country_code: 'GR', salaries_per_year: 14, state: '' }; },
     });
 }
 

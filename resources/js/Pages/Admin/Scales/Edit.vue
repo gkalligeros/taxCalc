@@ -40,12 +40,24 @@
                         <label class="block text-xs text-gray-500 mb-1">{{ t('country') }}</label>
                         <select
                             v-model="scaleCountry"
+                            @change="onEditCountryChange"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                             required
                         >
                             <option v-for="(name, code) in availableCountries" :key="code" :value="code">
                                 {{ code }} - {{ name }}
                             </option>
+                        </select>
+                    </div>
+                    <div class="w-36">
+                        <label class="block text-xs text-gray-500 mb-1">{{ t('salaries_per_year') }}</label>
+                        <select
+                            v-model.number="scaleSalariesPerYear"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            required
+                        >
+                            <option :value="12">{{ t('salary_division_12') }}</option>
+                            <option :value="14">{{ t('salary_division_14') }}</option>
                         </select>
                     </div>
                     <div class="w-36">
@@ -276,6 +288,7 @@ const { locale, supportedLocales, t, switchLocale } = useI18n();
 
 const scaleName = ref(props.scale.name);
 const scaleCountry = ref(props.scale.country_code);
+const scaleSalariesPerYear = ref(Number(props.scale.salaries_per_year ?? 12));
 const scaleState = ref(props.scale.state || '');
 
 const editingBracket = ref(null);
@@ -289,8 +302,17 @@ function updateDetails() {
     router.put(`/admin/scales/${props.scale.id}`, {
         name: scaleName.value,
         country_code: scaleCountry.value,
+        salaries_per_year: scaleSalariesPerYear.value,
         state: scaleState.value || null,
     });
+}
+
+function defaultSalariesForCountry(countryCode) {
+    return countryCode === 'GR' ? 14 : 12;
+}
+
+function onEditCountryChange() {
+    scaleSalariesPerYear.value = defaultSalariesForCountry(scaleCountry.value);
 }
 
 function addBracket() {

@@ -36,7 +36,15 @@ export function useI18n() {
             return;
         }
 
-        router.get(`/locale/${nextLocale}`, {}, { preserveScroll: true });
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', nextLocale);
+
+        router.visit(`${url.pathname}${url.search}`, {
+            method: 'get',
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     }
 
     return {

@@ -6,6 +6,7 @@ use App\Models\TaxScale;
 use App\Services\SalaryCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,21 +31,57 @@ class CalculatorController extends Controller
     public function calculate(Request $request, SalaryCalculator $calculator): JsonResponse
     {
         $validated = $request->validate([
-            'gross' => 'required|numeric|min:0',
+            'mode' => 'nullable|in:gross_to_net,net_to_gross',
+            'amount' => 'nullable|numeric|min:0',
+            'gross' => 'nullable|numeric|min:0',
+            'net' => 'nullable|numeric|min:0',
             'country_code' => 'required|string|size:2',
             'state' => 'nullable|string|max:100',
             'age' => 'integer|min:16|max:100',
             'children' => 'integer|min:0|max:20',
         ]);
 
-        $result = $calculator->calculate(
-            gross: (float) $validated['gross'],
-            countryCode: $validated['country_code'],
-            state: $validated['state'] ?? null,
-            age: $validated['age'] ?? 31,
-            children: $validated['children'] ?? 0,
-        );
+        $mode = $validated['mode'] ?? 'gross_to_net';
+        $age = $validated['age'] ?? 31;
+        $children = $validated['children'] ?? 0;
+        $countryCode = $validated['country_code'];
+        $state = $validated['state'] ?? null;
 
-        return response()->json($result);
+        if ($mode === 'net_to_gross') {
+            if (! isset($validated['net']) && ! isset($validated['amount'])) {
+                throw ValidationException::withMessages([
+                    'net' => ['The net field is required when using net_to_gross mode.'],
+                ]);
+            }
+
+            $targetNet = (float) ($validated['net'] ?? $validated['amount']);
+            $result = $calculator->calculateFromNet(
+                targetNet: $targetNet,
+                countryCode: $countryCode,
+                state: $state,
+                age: $age,
+                children: $children,
+            );
+        } else {
+            if (! isset($validated['gross']) && ! isset($validated['amount'])) {
+                throw ValidationException::withMessages([
+                    'gross' => ['The gross field is required when using gross_to_net mode.'],
+                ]);
+            }
+
+            $gross = (float) ($validated['gross'] ?? $validated['amount']);
+            $result = $calculator->calculate(
+                gross: $gross,
+                countryCode: $countryCode,
+                state: $state,
+                age: $age,
+                children: $children,
+            );
+        }
+
+        return response()->json([
+            ...$result,
+            'mode' => $mode,
+        ]);
     }
 }

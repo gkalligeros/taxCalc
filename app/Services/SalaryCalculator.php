@@ -6,6 +6,69 @@ use App\Models\TaxScale;
 
 class SalaryCalculator
 {
+    public function calculateFromNet(
+        float $targetNet,
+        ?TaxScale $scale = null,
+        ?string $countryCode = null,
+        ?string $state = null,
+        int $age = 31,
+        int $children = 0,
+    ): array {
+        $resolvedScale = $this->resolveScale($scale, $countryCode, $state);
+
+        if (! $resolvedScale) {
+            return $this->calculate(
+                gross: $targetNet,
+                scale: null,
+                age: $age,
+                children: $children,
+            );
+        }
+
+        $low = 0.0;
+        $high = max($targetNet, 1.0);
+        $best = $this->calculate(
+            gross: $high,
+            scale: $resolvedScale,
+            age: $age,
+            children: $children,
+        );
+
+        // Expand search bounds until the high-end net reaches (or exceeds) target.
+        for ($i = 0; $i < 60 && $best['net'] < $targetNet; $i++) {
+            $high *= 2;
+            $best = $this->calculate(
+                gross: $high,
+                scale: $resolvedScale,
+                age: $age,
+                children: $children,
+            );
+        }
+
+        for ($i = 0; $i < 80; $i++) {
+            $mid = ($low + $high) / 2;
+            $candidate = $this->calculate(
+                gross: $mid,
+                scale: $resolvedScale,
+                age: $age,
+                children: $children,
+            );
+
+            if (abs($candidate['net'] - $targetNet) <= 0.01) {
+                return $candidate;
+            }
+
+            if ($candidate['net'] < $targetNet) {
+                $low = $mid;
+            } else {
+                $high = $mid;
+                $best = $candidate;
+            }
+        }
+
+        return $best;
+    }
+
     public function calculate(
         float $gross,
         ?TaxScale $scale = null,
@@ -14,11 +77,7 @@ class SalaryCalculator
         int $age = 31,
         int $children = 0,
     ): array {
-        if (!$scale) {
-            $scale = $countryCode
-                ? TaxScale::getActive($countryCode, $state)
-                : TaxScale::where('is_active', true)->with(['brackets.overrides', 'deductions'])->first();
-        }
+        $scale = $this->resolveScale($scale, $countryCode, $state);
 
         if (!$scale) {
             return [
@@ -29,6 +88,7 @@ class SalaryCalculator
                 'tax' => 0,
                 'tax_breakdown' => [],
                 'net' => round($gross, 2),
+                'salaries_per_year' => 12,
             ];
         }
 
@@ -93,6 +153,18 @@ class SalaryCalculator
             'tax' => round($totalTax, 2),
             'tax_breakdown' => $taxBreakdown,
             'net' => $net,
+            'salaries_per_year' => (int) ($scale->salaries_per_year ?? 12),
         ];
+    }
+
+    private function resolveScale(?TaxScale $scale, ?string $countryCode, ?string $state): ?TaxScale
+    {
+        if ($scale) {
+            return $scale;
+        }
+
+        return $countryCode
+            ? TaxScale::getActive($countryCode, $state)
+            : TaxScale::where('is_active', true)->with(['brackets.overrides', 'deductions'])->first();
     }
 }

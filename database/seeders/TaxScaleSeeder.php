@@ -12,6 +12,7 @@ class TaxScaleSeeder extends Seeder
         $scale = TaxScale::create([
             'name' => 'Greece 2026 Tax Scale',
             'country_code' => 'GR',
+            'salaries_per_year' => 14,
             'is_active' => true,
         ]);
 

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TaxScale extends Model
 {
-    protected $fillable = ['name', 'country_code', 'state', 'is_active'];
+    protected $fillable = ['name', 'country_code', 'state', 'salaries_per_year', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'salaries_per_year' => 'integer',
     ];
 
     public function brackets(): HasMany

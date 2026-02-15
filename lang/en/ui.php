@@ -23,12 +23,15 @@ return [
     'dependent_children' => 'Dependent Children',
 
     'using_tax_scale' => 'Using tax scale: :name',
-    'no_active_scale' => 'No active tax scale configured for this region. Please set one up in the admin panel.',
+    'no_active_scale' => 'No active tax scale configured for this region. Please add one via database seeding.',
 
     'annual_gross_salary' => 'Annual Gross Salary',
+    'target_annual_net_salary' => 'Target Annual Net Salary',
     'salary_example_placeholder' => 'e.g. 30000',
     'calculating' => 'Calculating...',
     'calculate' => 'Calculate',
+    'gross_to_net' => 'Gross to Net',
+    'net_to_gross' => 'Net to Gross',
 
     'summary' => 'Summary',
     'gross_salary' => 'Gross Salary',
@@ -71,6 +74,9 @@ return [
 
     'scale_details' => 'Scale Details',
     'name' => 'Name',
+    'salaries_per_year' => 'Salaries per Year',
+    'salary_division_12' => '12 salaries',
+    'salary_division_14' => '14 salaries',
     'save' => 'Save',
     'tax_brackets' => 'Tax Brackets',
     'min_amount_eur' => 'Min Amount (EUR)',
