@@ -24,6 +24,11 @@ class TaxScale extends Model
         return $this->hasMany(Deduction::class);
     }
 
+    public function taxExemptions(): HasMany
+    {
+        return $this->hasMany(TaxExemption::class);
+    }
+
     public static function activateOnly(int $id): void
     {
         $scale = static::findOrFail($id);
@@ -53,7 +58,7 @@ class TaxScale extends Model
                 }
             })
             ->where('is_active', true)
-            ->with(['brackets.overrides', 'deductions'])
+            ->with(['brackets.overrides', 'deductions', 'taxExemptions'])
             ->first();
     }
 

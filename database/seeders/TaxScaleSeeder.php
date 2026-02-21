@@ -119,5 +119,12 @@ class TaxScaleSeeder extends Seeder
             'name' => 'Social Security (EFKA)',
             'rate' => 0.1337,
         ]);
+
+        // Tax Exemptions
+        $scale->taxExemptions()->create([
+            'name'        => '50% Tax Exemption (Article 5C)',
+            'description' => '50% income tax exemption for 7 years for individuals who transfer their tax residence to Greece.',
+            'rate'        => 0.5000,
+        ]);
     }
 }
