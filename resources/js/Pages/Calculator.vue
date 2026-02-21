@@ -32,6 +32,76 @@
             </header>
 
             <section class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button
+                        @click="mode = 'gross_to_net'; result = null"
+                        class="px-3 py-1.5 text-sm rounded border transition"
+                        :class="mode === 'gross_to_net' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
+                    >
+                        {{ t('gross_to_net') }}
+                    </button>
+                    <button
+                        @click="mode = 'net_to_gross'; result = null"
+                        class="px-3 py-1.5 text-sm rounded border transition"
+                        :class="mode === 'net_to_gross' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
+                    >
+                        {{ t('net_to_gross') }}
+                    </button>
+                </div>
+                <div class="mb-4 w-full sm:max-w-xs">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('salaries_per_year') }}</label>
+                    <select
+                        v-model.number="selectedSalariesPerYear"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    >
+                        <option :value="12">{{ t('salary_division_12') }}</option>
+                        <option :value="14">{{ t('salary_division_14') }}</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button
+                        @click="inputPeriod = 'annual'; result = null"
+                        class="px-3 py-1.5 text-sm rounded border transition"
+                        :class="inputPeriod === 'annual' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
+                    >
+                        {{ t('annual') }}
+                    </button>
+                    <button
+                        @click="inputPeriod = 'monthly'; result = null"
+                        class="px-3 py-1.5 text-sm rounded border transition"
+                        :class="inputPeriod === 'monthly' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
+                    >
+                        {{ t('monthly') }}
+                    </button>
+                </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ inputLabel }}</label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">&euro;</span>
+                        <input
+                            v-model.number="amount"
+                            type="number"
+                            min="0"
+                            :step="inputPeriod === 'monthly' ? 50 : 100"
+                            :placeholder="inputPeriod === 'monthly' ? t('monthly_salary_example_placeholder') : t('salary_example_placeholder')"
+                            class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+                            @keyup.enter="calculate"
+                        />
+                    </div>
+                    <button
+                        @click="calculate"
+                        :disabled="loading || !amount"
+                        class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                        {{ loading ? t('calculating') : t('calculate') }}
+                    </button>
+                </div>
+                <div v-if="apiError" class="mt-3 text-sm text-red-600">
+                    {{ apiError }}
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
                 <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">{{ t('region') }} & {{ t('personal_info') }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -102,73 +172,6 @@
                 </div>
                 <div v-else class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
                     {{ t('no_active_scale') }}
-                </div>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <button
-                        @click="mode = 'gross_to_net'; result = null"
-                        class="px-3 py-1.5 text-sm rounded border transition"
-                        :class="mode === 'gross_to_net' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
-                    >
-                        {{ t('gross_to_net') }}
-                    </button>
-                    <button
-                        @click="mode = 'net_to_gross'; result = null"
-                        class="px-3 py-1.5 text-sm rounded border transition"
-                        :class="mode === 'net_to_gross' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
-                    >
-                        {{ t('net_to_gross') }}
-                    </button>
-                </div>
-                <div class="mb-4 w-full sm:max-w-xs">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('salaries_per_year') }}</label>
-                    <select
-                        v-model.number="selectedSalariesPerYear"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                    >
-                        <option :value="12">{{ t('salary_division_12') }}</option>
-                        <option :value="14">{{ t('salary_division_14') }}</option>
-                    </select>
-                </div>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <button
-                        @click="inputPeriod = 'annual'; result = null"
-                        class="px-3 py-1.5 text-sm rounded border transition"
-                        :class="inputPeriod === 'annual' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
-                    >
-                        {{ t('annual') }}
-                    </button>
-                    <button
-                        @click="inputPeriod = 'monthly'; result = null"
-                        class="px-3 py-1.5 text-sm rounded border transition"
-                        :class="inputPeriod === 'monthly' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
-                    >
-                        {{ t('monthly') }}
-                    </button>
-                </div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ inputLabel }}</label>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">&euro;</span>
-                        <input
-                            v-model.number="amount"
-                            type="number"
-                            min="0"
-                            :step="inputPeriod === 'monthly' ? 50 : 100"
-                            :placeholder="inputPeriod === 'monthly' ? t('monthly_salary_example_placeholder') : t('salary_example_placeholder')"
-                            class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
-                            @keyup.enter="calculate"
-                        />
-                    </div>
-                    <button
-                        @click="calculate"
-                        :disabled="loading || !amount"
-                        class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                        {{ loading ? t('calculating') : t('calculate') }}
-                    </button>
-                </div>
-                <div v-if="apiError" class="mt-3 text-sm text-red-600">
-                    {{ apiError }}
                 </div>
             </section>
 
