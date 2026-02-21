@@ -39,6 +39,7 @@ class CalculatorController extends Controller
             'state' => 'nullable|string|max:100',
             'age' => 'integer|min:16|max:100',
             'children' => 'integer|min:0|max:20',
+            'tax_exemption_rate' => 'nullable|numeric|min:0|max:1',
         ]);
 
         $mode = $validated['mode'] ?? 'gross_to_net';
@@ -46,6 +47,7 @@ class CalculatorController extends Controller
         $children = $validated['children'] ?? 0;
         $countryCode = $validated['country_code'];
         $state = $validated['state'] ?? null;
+        $taxExemptionRate = (float) ($validated['tax_exemption_rate'] ?? 0.0);
 
         if ($mode === 'net_to_gross') {
             if (! isset($validated['net']) && ! isset($validated['amount'])) {
@@ -61,6 +63,7 @@ class CalculatorController extends Controller
                 state: $state,
                 age: $age,
                 children: $children,
+                taxExemptionRate: $taxExemptionRate,
             );
         } else {
             if (! isset($validated['gross']) && ! isset($validated['amount'])) {
@@ -76,6 +79,7 @@ class CalculatorController extends Controller
                 state: $state,
                 age: $age,
                 children: $children,
+                taxExemptionRate: $taxExemptionRate,
             );
         }
 

@@ -27,7 +27,12 @@ return [
 
     'annual_gross_salary' => 'Annual Gross Salary',
     'target_annual_net_salary' => 'Target Annual Net Salary',
+    'monthly_gross_salary' => 'Monthly Gross Salary',
+    'target_monthly_net_salary' => 'Target Monthly Net Salary',
+    'annual' => 'Annual',
+    'monthly' => 'Monthly',
     'salary_example_placeholder' => 'e.g. 30000',
+    'monthly_salary_example_placeholder' => 'e.g. 2500',
     'calculating' => 'Calculating...',
     'calculate' => 'Calculate',
     'gross_to_net' => 'Gross to Net',
@@ -96,8 +101,21 @@ return [
     'name_example_social_security' => 'e.g. Social Security',
     'rate_overrides_for' => 'Rate Overrides for',
 
+    'tax_exemption_amount' => 'Tax Exemption Amount',
+    'salary_breakdown_chart' => 'Salary Breakdown',
+
     'delete_scale_confirm' => 'Delete ":name"? This cannot be undone.',
     'delete_bracket_confirm' => 'Delete this bracket?',
     'delete_override_confirm' => 'Delete this override?',
     'delete_deduction_confirm' => 'Delete this deduction?',
+
+    'built_by' => 'Built by',
+
+    'seo_title' => 'Net Salary Calculator — Free Online Tax Tool',
+    'seo_description' => 'Calculate your net salary from gross (or gross from net) with accurate tax brackets, deductions, and exemptions. Supports Greece and more.',
+
+    'cookie_banner_text' => 'This site uses cookies for analytics. We only store anonymized calculation data — no personal information is collected.',
+    'cookie_accept' => 'Accept',
+    'cookie_decline' => 'Decline',
+    'privacy_disclaimer' => 'We only store anonymized calculation data. No personal information is collected.',
 ];

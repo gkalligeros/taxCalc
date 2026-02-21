@@ -13,6 +13,7 @@ class SalaryCalculator
         ?string $state = null,
         int $age = 31,
         int $children = 0,
+        float $taxExemptionRate = 0.0,
     ): array {
         $resolvedScale = $this->resolveScale($scale, $countryCode, $state);
 
@@ -22,6 +23,7 @@ class SalaryCalculator
                 scale: null,
                 age: $age,
                 children: $children,
+                taxExemptionRate: $taxExemptionRate,
             );
         }
 
@@ -32,6 +34,7 @@ class SalaryCalculator
             scale: $resolvedScale,
             age: $age,
             children: $children,
+            taxExemptionRate: $taxExemptionRate,
         );
 
         // Expand search bounds until the high-end net reaches (or exceeds) target.
@@ -42,6 +45,7 @@ class SalaryCalculator
                 scale: $resolvedScale,
                 age: $age,
                 children: $children,
+                taxExemptionRate: $taxExemptionRate,
             );
         }
 
@@ -52,6 +56,7 @@ class SalaryCalculator
                 scale: $resolvedScale,
                 age: $age,
                 children: $children,
+                taxExemptionRate: $taxExemptionRate,
             );
 
             if (abs($candidate['net'] - $targetNet) <= 0.01) {
@@ -76,6 +81,7 @@ class SalaryCalculator
         ?string $state = null,
         int $age = 31,
         int $children = 0,
+        float $taxExemptionRate = 0.0,
     ): array {
         $scale = $this->resolveScale($scale, $countryCode, $state);
 
@@ -85,6 +91,7 @@ class SalaryCalculator
                 'total_deductions' => 0,
                 'deductions_breakdown' => [],
                 'taxable_income' => round($gross, 2),
+                'tax_exemption_amount' => 0,
                 'tax' => 0,
                 'tax_breakdown' => [],
                 'net' => round($gross, 2),
@@ -110,10 +117,14 @@ class SalaryCalculator
 
         $taxableIncome = round($gross - $totalDeductions, 2);
 
-        // Calculate progressive tax
+        // Apply tax exemption (e.g. Article 5C — 50% exemption)
+        $taxExemptionAmount = round($taxableIncome * $taxExemptionRate, 2);
+        $taxableIncomeAfterExemption = round($taxableIncome - $taxExemptionAmount, 2);
+
+        // Calculate progressive tax on the (possibly reduced) taxable income
         $taxBreakdown = [];
         $totalTax = 0;
-        $remaining = $taxableIncome;
+        $remaining = $taxableIncomeAfterExemption;
 
         foreach ($scale->brackets as $bracket) {
             if ($remaining <= 0) {
@@ -150,6 +161,7 @@ class SalaryCalculator
             'total_deductions' => round($totalDeductions, 2),
             'deductions_breakdown' => $deductionsBreakdown,
             'taxable_income' => $taxableIncome,
+            'tax_exemption_amount' => $taxExemptionAmount,
             'tax' => round($totalTax, 2),
             'tax_breakdown' => $taxBreakdown,
             'net' => $net,

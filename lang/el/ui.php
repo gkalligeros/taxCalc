@@ -27,7 +27,12 @@ return [
 
     'annual_gross_salary' => 'Ετήσιος Μικτός Μισθός',
     'target_annual_net_salary' => 'Στόχος Ετήσιου Καθαρού Μισθού',
+    'monthly_gross_salary' => 'Μηνιαίος Μικτός Μισθός',
+    'target_monthly_net_salary' => 'Στόχος Μηνιαίου Καθαρού Μισθού',
+    'annual' => 'Ετήσιος',
+    'monthly' => 'Μηνιαίος',
     'salary_example_placeholder' => 'π.χ. 30000',
+    'monthly_salary_example_placeholder' => 'π.χ. 2500',
     'calculating' => 'Υπολογισμός...',
     'calculate' => 'Υπολογισμός',
     'gross_to_net' => 'Μικτός σε Καθαρό',
@@ -96,8 +101,21 @@ return [
     'name_example_social_security' => 'π.χ. Κοινωνική Ασφάλιση',
     'rate_overrides_for' => 'Εξαιρέσεις Συντελεστή για',
 
+    'tax_exemption_amount' => 'Ποσό Φοροαπαλλαγής',
+    'salary_breakdown_chart' => 'Ανάλυση Μισθού',
+
     'delete_scale_confirm' => 'Διαγραφή της ":name"; Αυτή η ενέργεια δεν αναιρείται.',
     'delete_bracket_confirm' => 'Διαγραφή αυτού του κλιμακίου;',
     'delete_override_confirm' => 'Διαγραφή αυτής της εξαίρεσης;',
     'delete_deduction_confirm' => 'Διαγραφή αυτής της κράτησης;',
+
+    'built_by' => 'Δημιουργήθηκε από',
+
+    'seo_title' => 'Υπολογιστής Καθαρού Μισθού — Δωρεάν Online Εργαλείο',
+    'seo_description' => 'Υπολογίστε τον καθαρό μισθό σας από τον μικτό (ή τον μικτό από τον καθαρό) με ακριβή φορολογικά κλιμάκια, κρατήσεις και απαλλαγές. Υποστηρίζει Ελλάδα και άλλες χώρες.',
+
+    'cookie_banner_text' => 'Αυτός ο ιστότοπος χρησιμοποιεί cookies για στατιστικά. Αποθηκεύουμε μόνο ανώνυμα δεδομένα υπολογισμών — δεν συλλέγονται προσωπικές πληροφορίες.',
+    'cookie_accept' => 'Αποδοχή',
+    'cookie_decline' => 'Απόρριψη',
+    'privacy_disclaimer' => 'Αποθηκεύουμε μόνο ανώνυμα δεδομένα υπολογισμών. Δεν συλλέγονται προσωπικές πληροφορίες.',
 ];
