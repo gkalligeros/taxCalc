@@ -4,6 +4,7 @@ return [
     'language' => 'Language',
     'english' => 'English',
     'greek' => 'Greek',
+    'italian' => 'Italian',
 
     'net_salary_calculator' => 'Net Salary Calculator',
     'admin_panel' => 'Admin Panel',
@@ -81,7 +82,8 @@ return [
     'name' => 'Name',
     'salaries_per_year' => 'Salaries per Year',
     'salary_division_12' => '12 salaries',
-    'salary_division_14' => '14 salaries',
+    'salary_division_13' => '13 salaries (Tredicesima)',
+    'salary_division_14' => '14 salaries (Quattordicesima)',
     'save' => 'Save',
     'tax_brackets' => 'Tax Brackets',
     'min_amount_eur' => 'Min Amount (EUR)',
@@ -133,6 +135,7 @@ return [
     'delete_deduction_confirm' => 'Delete this deduction?',
 
     'built_by' => 'Built by',
+    'report_a_bug' => 'Report a Bug',
 
     'seo_title' => 'Net Salary Calculator — Free Online Tax Tool',
     'seo_description' => 'Calculate your net salary from gross (or gross from net) with accurate tax brackets, deductions, and exemptions. Supports Greece and more.',

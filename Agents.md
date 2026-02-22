@@ -4,7 +4,7 @@
 - **Backend**: Laravel 11 (PHP), Inertia.js server-side adapter
 - **Frontend**: Vue 3 (Composition API), Inertia.js client-side adapter, Tailwind CSS, Chart.js (via vue-chartjs)
 - **Database**: MySQL
-- **i18n**: Laravel `lang/` files (PHP arrays), shared to Vue via Inertia shared props
+- **i18n**: Laravel `lang/` files (PHP arrays), shared to Vue via Inertia shared props. Supported locales: `en`, `el`, `it`
 
 ---
 
@@ -35,6 +35,10 @@ taxCalc/
 │   │   └── PercentileService.php  # World & country income percentile computation
 │   └── Support/
 │       └── CurrencyHelper.php     # Static COUNTRY_CURRENCIES map + forCountry(code) helper
+├── database/seeders/
+│   ├── DatabaseSeeder.php          # Calls TaxScaleSeeder + ItalyTaxScaleSeeder
+│   ├── TaxScaleSeeder.php          # Greece 2026 scale (Law 5246/2025)
+│   └── ItalyTaxScaleSeeder.php     # Italy 2024 IRPEF — 3 scales: 12/13/14 salaries
 ├── database/migrations/
 │   ├── 2025_01_01_000003_create_tax_scales_table.php
 │   ├── 2025_01_01_000004_create_tax_brackets_table.php
@@ -47,10 +51,16 @@ taxCalc/
 ├── lang/
 │   ├── en/
 │   │   ├── ui.php        # UI string translations (English)
-│   │   └── countries.php # Country code → country name map (English)
-│   └── el/
-│       ├── ui.php        # UI string translations (Greek)
-│       └── countries.php # Country code → country name map (Greek)
+│   │   ├── countries.php # Country code → country name map (English)
+│   │   └── messages.php  # Admin flash messages (English)
+│   ├── el/
+│   │   ├── ui.php        # UI string translations (Greek)
+│   │   ├── countries.php # Country code → country name map (Greek)
+│   │   └── messages.php  # Admin flash messages (Greek)
+│   └── it/
+│       ├── ui.php        # UI string translations (Italian)
+│       ├── countries.php # Country code → country name map (Italian)
+│       └── messages.php  # Admin flash messages (Italian)
 └── resources/js/
     ├── Pages/
     │   ├── Calculator.vue         # Main public calculator page
@@ -182,6 +192,7 @@ Anonymous calculation records for live stats / percentile.
 - **Locale**: driven by `?lang=en|el` query param; stored in session; falls back to `en`
 - **TaxScale activation**: only one active scale per (country_code, state) pair
 - **Net→Gross**: solved via binary search in `SalaryCalculator::calculateFromNet`
+- **Salaries per year**: supports 12, 13, 14 — validation in `ScaleController`, dropdown in all three scale UIs + Calculator. Italy uses 13 (Tredicesima, most common) and 14 (Quattordicesima)
 - **Percentile data**: `PercentileService` uses hardcoded World Bank distribution data
 - **Live stats**: computed fresh on each `/api/calculate` call (before saving current record)
 - **Currency** is always auto-derived from `country_code` on the PHP side; never manually set by admin

@@ -35,7 +35,7 @@ class ScaleController extends Controller
             'name' => 'required|string|max:255',
             'country_code' => 'required|string|size:2',
             'state' => 'nullable|string|max:100',
-            'salaries_per_year' => 'required|integer|in:12,14',
+            'salaries_per_year' => 'required|integer|in:12,13,14',
         ]);
 
         TaxScale::create([
@@ -62,7 +62,7 @@ class ScaleController extends Controller
             'name' => 'required|string|max:255',
             'country_code' => 'required|string|size:2',
             'state' => 'nullable|string|max:100',
-            'salaries_per_year' => 'required|integer|in:12,14',
+            'salaries_per_year' => 'required|integer|in:12,13,14',
         ]);
 
         $scale->update([

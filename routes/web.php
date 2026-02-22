@@ -26,7 +26,7 @@ Route::get('/robots.txt', function () {
 });
 
 Route::get('/locale/{locale}', function (Request $request, string $locale) {
-    $supportedLocales = ['en', 'el'];
+    $supportedLocales = ['en', 'el', 'it'];
 
     if (! in_array($locale, $supportedLocales, true)) {
         $locale = config('app.fallback_locale', 'en');

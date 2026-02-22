@@ -13,7 +13,7 @@
                             class="px-2 py-1 text-xs rounded border transition"
                             :class="lang === locale ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
                         >
-                            {{ lang === 'el' ? t('greek') : t('english') }}
+                            {{ { en: t('english'), el: t('greek'), it: t('italian') }[lang] ?? lang }}
                         </button>
                     </div>
                     <a href="/" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
@@ -53,6 +53,7 @@
                             required
                         >
                             <option :value="12">{{ t('salary_division_12') }}</option>
+                            <option :value="13">{{ t('salary_division_13') }}</option>
                             <option :value="14">{{ t('salary_division_14') }}</option>
                         </select>
                         <input

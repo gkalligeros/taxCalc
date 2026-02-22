@@ -7,7 +7,7 @@
         <meta property="og:description" :content="t('seo_description')" />
         <meta property="og:type" content="website" />
         <meta property="og:url" :content="canonicalUrl" />
-        <meta property="og:locale" :content="locale === 'el' ? 'el_GR' : 'en_US'" />
+        <meta property="og:locale" :content="{ en: 'en_US', el: 'el_GR', it: 'it_IT' }[locale] ?? 'en_US'" />
         <meta property="og:site_name" :content="t('net_salary_calculator')" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" :content="t('seo_title')" />
@@ -26,7 +26,7 @@
                         class="px-2 py-1 text-xs rounded border transition"
                         :class="lang === locale ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
                     >
-                        {{ lang === 'el' ? t('greek') : t('english') }}
+                        {{ { en: t('english'), el: t('greek'), it: t('italian') }[lang] ?? lang }}
                     </button>
                 </div>
             </header>
@@ -55,6 +55,7 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     >
                         <option :value="12">{{ t('salary_division_12') }}</option>
+                        <option :value="13">{{ t('salary_division_13') }}</option>
                         <option :value="14">{{ t('salary_division_14') }}</option>
                     </select>
                 </div>
@@ -455,6 +456,9 @@
         <span>{{ t('built_by') }}</span>
         <a href="https://www.linkedin.com/in/george-kalligeros-a2a1b586/" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline ml-1">George Kalligeros</a>
         <p class="mt-2 text-xs text-gray-400">{{ t('privacy_disclaimer') }}</p>
+        <p class="mt-2 text-xs text-gray-400">
+            <a :href="bugReportHref" class="hover:text-gray-600 underline underline-offset-2 transition">{{ t('report_a_bug') }}</a>
+        </p>
     </footer>
     <CookieBanner />
 </template>
@@ -481,6 +485,9 @@ const props = defineProps({
 const { locale, supportedLocales, countries, t, switchLocale } = useI18n();
 
 const canonicalUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+const _em = ['gkalligeros', 'gmail', 'com'];
+const bugReportHref = computed(() => `mailto:${_em[0]}@${_em[1]}.${_em[2]}?subject=Bug+Report`);
 
 const selectedCountry = ref(props.selectedCountry || 'GR');
 const selectedState = ref(props.selectedState || null);

@@ -18,7 +18,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'locale' => fn () => app()->getLocale(),
-            'supportedLocales' => ['en', 'el'],
+            'supportedLocales' => ['en', 'el', 'it'],
             'translations' => fn () => [
                 'ui' => Lang::get('ui'),
                 'countries' => Lang::get('countries'),
