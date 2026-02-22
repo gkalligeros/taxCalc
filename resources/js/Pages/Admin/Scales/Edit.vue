@@ -80,8 +80,8 @@
                 <table class="w-full text-sm mb-4">
                     <thead>
                         <tr class="border-b">
-                            <th class="text-left py-2 text-gray-600">{{ t('min_amount_eur') }}</th>
-                            <th class="text-left py-2 text-gray-600">{{ t('max_amount_eur') }}</th>
+                            <th class="text-left py-2 text-gray-600">Min ({{ scaleCurrency }})</th>
+                            <th class="text-left py-2 text-gray-600">Max ({{ scaleCurrency }})</th>
                             <th class="text-left py-2 text-gray-600">{{ t('rate') }} (%)</th>
                             <th class="text-right py-2 text-gray-600">{{ t('actions') }}</th>
                         </tr>
@@ -105,8 +105,8 @@
                                     </td>
                                 </template>
                                 <template v-else>
-                                    <td class="py-2">&euro;{{ Number(bracket.min_amount).toLocaleString(locale) }}</td>
-                                    <td class="py-2">{{ bracket.max_amount ? '&euro;' + Number(bracket.max_amount).toLocaleString(locale) : t('unlimited') }}</td>
+                                    <td class="py-2">{{ scaleCurrencySymbol }}{{ Number(bracket.min_amount).toLocaleString(locale) }}</td>
+                                    <td class="py-2">{{ bracket.max_amount ? scaleCurrencySymbol + Number(bracket.max_amount).toLocaleString(locale) : t('unlimited') }}</td>
                                     <td class="py-2">{{ (bracket.rate * 100).toFixed(2) }}%</td>
                                     <td class="py-2 text-right space-x-1">
                                         <button
@@ -126,9 +126,9 @@
                                 <td colspan="4" class="bg-purple-50 p-4">
                                     <div class="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-3">
                                         {{ t('rate_overrides_for') }}
-                                        &euro;{{ Number(bracket.min_amount).toLocaleString(locale) }}
+                                        {{ scaleCurrencySymbol }}{{ Number(bracket.min_amount).toLocaleString(locale) }}
                                         &ndash;
-                                        {{ bracket.max_amount ? '&euro;' + Number(bracket.max_amount).toLocaleString(locale) : '&infin;' }}
+                                        {{ bracket.max_amount ? scaleCurrencySymbol + Number(bracket.max_amount).toLocaleString(locale) : '∞' }}
                                     </div>
 
                                     <table v-if="(bracket.overrides || []).length" class="w-full text-xs mb-3">
@@ -203,11 +203,11 @@
 
                 <form @submit.prevent="addBracket" class="flex gap-2 items-end">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">{{ t('min_eur') }}</label>
+                        <label class="block text-xs text-gray-500 mb-1">Min ({{ scaleCurrency }})</label>
                         <input v-model.number="newBracket.min_amount" type="number" min="0" step="0.01" class="w-full px-2 py-1.5 border rounded text-sm" required />
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">{{ t('max_eur') }}</label>
+                        <label class="block text-xs text-gray-500 mb-1">Max ({{ scaleCurrency }})</label>
                         <input v-model.number="newBracket.max_amount" type="number" min="0" step="0.01" :placeholder="t('unlimited')" class="w-full px-2 py-1.5 border rounded text-sm" />
                     </div>
                     <div class="flex-1">
@@ -275,9 +275,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useI18n } from '../../../composables/useI18n';
+import { COUNTRY_CURRENCIES, getCurrencySymbol } from '../../../utils/currencies';
 
 const props = defineProps({
     scale: Object,
@@ -290,6 +291,8 @@ const scaleName = ref(props.scale.name);
 const scaleCountry = ref(props.scale.country_code);
 const scaleSalariesPerYear = ref(Number(props.scale.salaries_per_year ?? 12));
 const scaleState = ref(props.scale.state || '');
+const scaleCurrency = computed(() => COUNTRY_CURRENCIES[scaleCountry.value] ?? 'EUR');
+const scaleCurrencySymbol = computed(() => getCurrencySymbol(scaleCurrency.value, locale.value));
 
 const editingBracket = ref(null);
 const newBracket = ref({ min_amount: null, max_amount: null, rate_pct: null });

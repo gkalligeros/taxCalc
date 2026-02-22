@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calculation;
 use App\Models\TaxScale;
+use App\Services\PercentileService;
+use App\Support\CurrencyHelper;
 use App\Services\SalaryCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,9 +86,74 @@ class CalculatorController extends Controller
             );
         }
 
+        // Collect live stats BEFORE saving so current calc isn't counted.
+        $liveStats = $this->computeLiveStats($result['gross'], $countryCode);
+
+        $currency = CurrencyHelper::forCountry($countryCode);
+
+        Calculation::create([
+            'country_code' => $countryCode,
+            'currency' => $currency,
+            'state' => $state,
+            'mode' => $mode,
+            'gross' => $result['gross'],
+            'net' => $result['net'],
+            'tax' => $result['tax'],
+            'total_deductions' => $result['total_deductions'],
+            'age' => $age,
+            'children' => $children,
+            'tax_exemption_rate' => $taxExemptionRate,
+        ]);
+
+        $percentile = PercentileService::compute($result['gross'], $countryCode);
+
         return response()->json([
             ...$result,
             'mode' => $mode,
+            'currency' => $currency,
+            ...$percentile,
+            ...$liveStats,
         ]);
+    }
+
+    private function computeLiveStats(float $gross, string $countryCode): array
+    {
+        $totalCount   = Calculation::count();
+        $countryCount = Calculation::where('country_code', $countryCode)->count();
+
+        $totalPercentile = $totalCount > 0
+            ? round(Calculation::where('gross', '<', $gross)->count() / $totalCount * 100, 1)
+            : null;
+
+        $countryPercentile = $countryCount > 0
+            ? round(Calculation::where('country_code', $countryCode)->where('gross', '<', $gross)->count() / $countryCount * 100, 1)
+            : null;
+
+        $countryAvgGross = $countryCount > 0
+            ? round((float) Calculation::where('country_code', $countryCode)->avg('gross'), 2)
+            : null;
+
+        $countryAvgNet = $countryCount > 0
+            ? round((float) Calculation::where('country_code', $countryCode)->avg('net'), 2)
+            : null;
+
+        $totalAvgGross = $totalCount > 0
+            ? round((float) Calculation::avg('gross'), 2)
+            : null;
+
+        $totalAvgNet = $totalCount > 0
+            ? round((float) Calculation::avg('net'), 2)
+            : null;
+
+        return [
+            'live_total_count'        => $totalCount,
+            'live_country_count'      => $countryCount,
+            'live_total_percentile'   => $totalPercentile,
+            'live_country_percentile' => $countryPercentile,
+            'live_country_avg_gross'  => $countryAvgGross,
+            'live_country_avg_net'    => $countryAvgNet,
+            'live_total_avg_gross'    => $totalAvgGross,
+            'live_total_avg_net'      => $totalAvgNet,
+        ];
     }
 }

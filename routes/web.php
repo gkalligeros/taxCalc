@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CalculatorController;
+use App\Http\Controllers\ScaleController;
+use App\Http\Controllers\StatsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
@@ -34,3 +37,15 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 
     return redirect()->back();
 })->name('locale.switch');
+
+// Admin auth (unprotected)
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+// Admin protected routes
+Route::middleware('admin.auth')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [StatsController::class, 'index'])->name('stats');
+    Route::resource('scales', ScaleController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::post('scales/{scale}/activate', [ScaleController::class, 'activate'])->name('scales.activate');
+});

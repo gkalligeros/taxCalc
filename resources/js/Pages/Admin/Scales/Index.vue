@@ -85,6 +85,9 @@
                             <span class="px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
                                 {{ scale.country_code }}{{ scale.state ? ' / ' + scale.state : '' }}
                             </span>
+                            <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                                {{ scale.currency ?? 'EUR' }}
+                            </span>
                             <span v-if="scale.is_active" class="px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">
                                 {{ t('active') }}
                             </span>

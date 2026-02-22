@@ -22,7 +22,7 @@
                     <button
                         v-for="lang in supportedLocales"
                         :key="lang"
-                        @click="switchLocale(lang)"
+                        @click="handleLocaleSwitch(lang)"
                         class="px-2 py-1 text-xs rounded border transition"
                         :class="lang === locale ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'"
                     >
@@ -77,7 +77,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ inputLabel }}</label>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">&euro;</span>
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">{{ currencySymbol }}</span>
                         <input
                             v-model.number="amount"
                             type="number"
@@ -181,28 +181,28 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="p-4 bg-gray-50 rounded-lg">
                             <div class="text-sm text-gray-500">{{ t('gross_salary') }}</div>
-                            <div class="text-2xl font-bold text-gray-800">&euro;{{ formatNumber(result.gross) }}</div>
+                            <div class="text-2xl font-bold text-gray-800">{{ formatCurrency(result.gross) }}</div>
                         </div>
                         <div class="p-4 bg-green-50 rounded-lg">
                             <div class="text-sm text-green-600">{{ t('net_salary') }}</div>
-                            <div class="text-2xl font-bold text-green-700">&euro;{{ formatNumber(result.net) }}</div>
+                            <div class="text-2xl font-bold text-green-700">{{ formatCurrency(result.net) }}</div>
                         </div>
                         <div class="p-4 bg-orange-50 rounded-lg">
                             <div class="text-sm text-orange-600">{{ t('total_deductions') }}</div>
-                            <div class="text-xl font-semibold text-orange-700">&euro;{{ formatNumber(result.total_deductions) }}</div>
+                            <div class="text-xl font-semibold text-orange-700">{{ formatCurrency(result.total_deductions) }}</div>
                         </div>
                         <div class="p-4 bg-red-50 rounded-lg">
                             <div class="text-sm text-red-600">{{ t('income_tax') }}</div>
-                            <div class="text-xl font-semibold text-red-700">&euro;{{ formatNumber(result.tax) }}</div>
+                            <div class="text-xl font-semibold text-red-700">{{ formatCurrency(result.tax) }}</div>
                         </div>
                     </div>
                     <div v-if="result.tax_exemption_amount > 0" class="mt-4 p-4 bg-purple-50 rounded-lg">
                         <div class="text-sm text-purple-600">{{ t('tax_exemption_amount') }}</div>
-                        <div class="text-xl font-semibold text-purple-700">&euro;{{ formatNumber(result.tax_exemption_amount) }}</div>
+                        <div class="text-xl font-semibold text-purple-700">{{ formatCurrency(result.tax_exemption_amount) }}</div>
                     </div>
                     <div class="mt-4 p-4 bg-blue-50 rounded-lg">
                         <div class="text-sm text-blue-600">{{ t('taxable_income_after_deductions') }}</div>
-                        <div class="text-xl font-semibold text-blue-700">&euro;{{ formatNumber(result.taxable_income) }}</div>
+                        <div class="text-xl font-semibold text-blue-700">{{ formatCurrency(result.taxable_income) }}</div>
                     </div>
                 </section>
 
@@ -210,6 +210,116 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ t('salary_breakdown_chart') }}</h2>
                     <div class="max-w-sm mx-auto">
                         <Doughnut :data="chartData" :options="chartOptions" />
+                    </div>
+                </section>
+
+                <section v-if="result.world_percentile !== undefined" class="bg-white rounded-lg shadow p-4 sm:p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-5">{{ t('income_percentile') }}</h2>
+
+                    <!-- Country percentile -->
+                    <div v-if="result.country_percentile !== null" class="mb-5">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">
+                                {{ t('in_country', { country: countries[selectedCountry] || selectedCountry }) }}
+                            </span>
+                            <span class="text-sm font-bold text-indigo-600">
+                                {{ t('top_percent', { pct: (100 - result.country_percentile).toFixed(1) }) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">
+                            {{ t('earn_more_than_country', { pct: result.country_percentile.toFixed(1), country: countries[selectedCountry] || selectedCountry }) }}
+                        </p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                                class="bg-indigo-500 h-3 rounded-full transition-all duration-700"
+                                :style="{ width: Math.min(result.country_percentile, 100) + '%' }"
+                            ></div>
+                        </div>
+                    </div>
+                    <div v-else-if="result.country_available === false" class="mb-5 text-xs text-gray-400 italic">
+                        {{ t('country_data_unavailable') }}
+                    </div>
+
+                    <!-- World percentile -->
+                    <div class="mb-5">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">{{ t('worldwide') }}</span>
+                            <span class="text-sm font-bold text-emerald-600">
+                                {{ t('top_percent', { pct: (100 - result.world_percentile).toFixed(1) }) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">
+                            {{ t('earn_more_than_world', { pct: result.world_percentile.toFixed(1) }) }}
+                        </p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                                class="bg-emerald-500 h-3 rounded-full transition-all duration-700"
+                                :style="{ width: Math.min(result.world_percentile, 100) + '%' }"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Global income distribution bar chart -->
+                    <div v-if="distributionChartData" class="mt-6">
+                        <h3 class="text-sm font-medium text-gray-600 mb-3">{{ t('global_income_distribution') }}</h3>
+                        <Bar :data="distributionChartData" :options="distributionChartOptions" />
+                    </div>
+
+                    <p class="mt-4 text-xs text-gray-400">* {{ t('percentile_disclaimer') }}</p>
+                </section>
+
+                <section v-if="result.live_total_count > 0" class="bg-white rounded-lg shadow p-4 sm:p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ t('calculator_users_stats') }}</h2>
+                    <p class="text-xs text-gray-400 mb-5">{{ t('based_on_calculations', { count: result.live_total_count.toLocaleString() }) }}</p>
+
+                    <!-- Country rank -->
+                    <div v-if="result.live_country_count > 0" class="mb-5">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">
+                                {{ t('your_rank_in_country', { country: countries[selectedCountry] || selectedCountry, count: result.live_country_count.toLocaleString() }) }}
+                            </span>
+                            <span class="text-sm font-bold text-indigo-600">
+                                {{ t('top_percent', { pct: (100 - result.live_country_percentile).toFixed(1) }) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">
+                            {{ t('earn_more_than_users_country', { pct: result.live_country_percentile.toFixed(1), country: countries[selectedCountry] || selectedCountry }) }}
+                        </p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                                class="bg-indigo-400 h-3 rounded-full transition-all duration-700"
+                                :style="{ width: Math.min(result.live_country_percentile, 100) + '%' }"
+                            ></div>
+                        </div>
+                        <div v-if="result.live_country_avg_gross" class="mt-2 flex gap-4 text-xs text-gray-500">
+                            <span>{{ t('avg_gross') }}: <strong class="text-gray-700">{{ formatCurrency(result.live_country_avg_gross) }}</strong></span>
+                            <span v-if="result.live_country_avg_net">{{ t('avg_net') }}: <strong class="text-gray-700">{{ formatCurrency(result.live_country_avg_net) }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Global rank -->
+                    <div v-if="result.live_total_percentile !== null" class="mb-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">
+                                {{ t('your_rank_globally', { count: result.live_total_count.toLocaleString() }) }}
+                            </span>
+                            <span class="text-sm font-bold text-emerald-600">
+                                {{ t('top_percent', { pct: (100 - result.live_total_percentile).toFixed(1) }) }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">
+                            {{ t('earn_more_than_users_all', { pct: result.live_total_percentile.toFixed(1) }) }}
+                        </p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                                class="bg-emerald-400 h-3 rounded-full transition-all duration-700"
+                                :style="{ width: Math.min(result.live_total_percentile, 100) + '%' }"
+                            ></div>
+                        </div>
+                        <div v-if="result.live_total_avg_gross" class="mt-2 flex gap-4 text-xs text-gray-500">
+                            <span>{{ t('avg_gross') }}: <strong class="text-gray-700">{{ formatCurrency(result.live_total_avg_gross) }}</strong></span>
+                            <span v-if="result.live_total_avg_net">{{ t('avg_net') }}: <strong class="text-gray-700">{{ formatCurrency(result.live_total_avg_net) }}</strong></span>
+                        </div>
                     </div>
                 </section>
 
@@ -221,15 +331,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                         <div>
                             <div class="text-sm text-gray-500">{{ t('monthly_gross') }}</div>
-                            <div class="text-lg font-semibold">&euro;{{ formatNumber(result.gross / salariesPerYear) }}</div>
+                            <div class="text-lg font-semibold">{{ formatCurrency(result.gross / salariesPerYear) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-gray-500">{{ t('monthly_deductions_tax') }}</div>
-                            <div class="text-lg font-semibold text-red-600">&euro;{{ formatNumber((result.total_deductions + result.tax) / salariesPerYear) }}</div>
+                            <div class="text-lg font-semibold text-red-600">{{ formatCurrency((result.total_deductions + result.tax) / salariesPerYear) }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-green-600">{{ t('monthly_net') }}</div>
-                            <div class="text-lg font-bold text-green-700">&euro;{{ formatNumber(result.net / salariesPerYear) }}</div>
+                            <div class="text-lg font-bold text-green-700">{{ formatCurrency(result.net / salariesPerYear) }}</div>
                         </div>
                     </div>
                 </section>
@@ -249,7 +359,7 @@
                             </div>
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>{{ t('amount') }}</span>
-                                <span class="font-semibold text-gray-800">&euro;{{ formatNumber(d.amount) }}</span>
+                                <span class="font-semibold text-gray-800">{{ formatCurrency(d.amount) }}</span>
                             </div>
                         </div>
                     </div>
@@ -266,7 +376,7 @@
                                 <tr v-for="d in result.deductions_breakdown" :key="d.name" class="border-b border-gray-100">
                                     <td class="py-2">{{ d.name }}</td>
                                     <td class="text-right py-2">{{ (d.rate * 100).toFixed(2) }}%</td>
-                                    <td class="text-right py-2 font-medium">&euro;{{ formatNumber(d.amount) }}</td>
+                                    <td class="text-right py-2 font-medium">{{ formatCurrency(d.amount) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -282,9 +392,9 @@
                             class="border border-gray-200 rounded-lg p-3"
                         >
                             <div class="font-medium text-gray-800">
-                                &euro;{{ formatNumber(b.min) }}
+                                {{ formatCurrency(b.min) }}
                                 &ndash;
-                                <span v-if="b.max">&euro;{{ formatNumber(b.max) }}</span>
+                                <span v-if="b.max">{{ formatCurrency(b.max) }}</span>
                                 <span v-else>&infin;</span>
                             </div>
                             <div class="mt-1 flex justify-between text-sm text-gray-600">
@@ -299,11 +409,11 @@
                             </div>
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>{{ t('taxable_amount') }}</span>
-                                <span>&euro;{{ formatNumber(b.taxable_amount) }}</span>
+                                <span>{{ formatCurrency(b.taxable_amount) }}</span>
                             </div>
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>{{ t('tax') }}</span>
-                                <span class="font-semibold text-gray-800">&euro;{{ formatNumber(b.tax) }}</span>
+                                <span class="font-semibold text-gray-800">{{ formatCurrency(b.tax) }}</span>
                             </div>
                         </div>
                     </div>
@@ -321,9 +431,9 @@
                             <tbody>
                                 <tr v-for="(b, i) in result.tax_breakdown" :key="i" class="border-b border-gray-100">
                                     <td class="py-2">
-                                        &euro;{{ formatNumber(b.min) }}
+                                        {{ formatCurrency(b.min) }}
                                         &ndash;
-                                        <span v-if="b.max">&euro;{{ formatNumber(b.max) }}</span>
+                                        <span v-if="b.max">{{ formatCurrency(b.max) }}</span>
                                         <span v-else>&infin;</span>
                                     </td>
                                     <td class="text-right py-2 text-gray-400">{{ (b.base_rate * 100).toFixed(0) }}%</td>
@@ -331,8 +441,8 @@
                                         {{ (b.rate * 100).toFixed(0) }}%
                                         <span v-if="b.rate !== b.base_rate" class="text-xs ml-1">({{ t('override') }})</span>
                                     </td>
-                                    <td class="text-right py-2">&euro;{{ formatNumber(b.taxable_amount) }}</td>
-                                    <td class="text-right py-2 font-medium">&euro;{{ formatNumber(b.tax) }}</td>
+                                    <td class="text-right py-2">{{ formatCurrency(b.taxable_amount) }}</td>
+                                    <td class="text-right py-2 font-medium">{{ formatCurrency(b.tax) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -353,11 +463,12 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import { useI18n } from '../composables/useI18n';
+import { COUNTRY_CURRENCIES, getCurrencySymbol, formatCurrencyValue } from '../utils/currencies';
 import CookieBanner from '../Components/CookieBanner.vue';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'vue-chartjs';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Doughnut, Bar } from 'vue-chartjs';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 const props = defineProps({
     activeScale: Object,
@@ -373,6 +484,10 @@ const canonicalUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
 const selectedCountry = ref(props.selectedCountry || 'GR');
 const selectedState = ref(props.selectedState || null);
+const currentCurrency = computed(() =>
+    props.activeScale?.currency ?? COUNTRY_CURRENCIES[selectedCountry.value] ?? 'EUR'
+);
+const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value, locale.value));
 const age = ref(31);
 const children = ref(0);
 const mode = ref('gross_to_net');
@@ -444,12 +559,108 @@ const chartOptions = {
                     const val = ctx.parsed;
                     const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                     const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                    return `${ctx.label}: €${Number(val).toLocaleString(undefined, { minimumFractionDigits: 2 })} (${pct}%)`;
+                    return `${ctx.label}: ${formatCurrencyValue(val, currentCurrency.value, locale.value)} (${pct}%)`;
                 },
             },
         },
     },
 };
+
+// Income buckets for the world distribution bar chart (annual gross in EUR)
+const WORLD_BUCKETS = [
+    { label: '< €2k',      min: 0,      max: 2000 },
+    { label: '€2k–5k',     min: 2000,   max: 5000 },
+    { label: '€5k–15k',    min: 5000,   max: 15000 },
+    { label: '€15k–30k',   min: 15000,  max: 30000 },
+    { label: '€30k–50k',   min: 30000,  max: 50000 },
+    { label: '€50k–80k',   min: 50000,  max: 80000 },
+    { label: '> €80k',     min: 80000,  max: Infinity },
+];
+
+function interpolatePercentileFromDist(income, distribution) {
+    if (!distribution || distribution.length === 0) return 0;
+    if (income <= distribution[0].income) return 0;
+    if (income >= distribution[distribution.length - 1].income) return 100;
+    for (let i = 1; i < distribution.length; i++) {
+        if (income <= distribution[i].income) {
+            const ratio = (income - distribution[i - 1].income) / (distribution[i].income - distribution[i - 1].income);
+            return distribution[i - 1].percentile + ratio * (distribution[i].percentile - distribution[i - 1].percentile);
+        }
+    }
+    return 100;
+}
+
+const distributionChartData = computed(() => {
+    if (!result.value?.world_distribution) return null;
+
+    const dist = result.value.world_distribution;
+    const gross = result.value.gross;
+
+    // Find which bucket the user falls in
+    const userBucketIdx = WORLD_BUCKETS.findIndex((b) =>
+        gross >= b.min && (b.max === Infinity ? true : gross < b.max)
+    );
+
+    const populations = WORLD_BUCKETS.map((b) => {
+        const lowerPct = interpolatePercentileFromDist(b.min, dist);
+        const upperPct = b.max === Infinity ? 100 : interpolatePercentileFromDist(b.max, dist);
+        return Math.round((upperPct - lowerPct) * 10) / 10;
+    });
+
+    return {
+        labels: WORLD_BUCKETS.map((b) => b.label),
+        datasets: [
+            {
+                data: populations,
+                backgroundColor: WORLD_BUCKETS.map((_, i) =>
+                    i === userBucketIdx ? '#10b981' : 'rgba(99, 102, 241, 0.2)'
+                ),
+                borderColor: WORLD_BUCKETS.map((_, i) =>
+                    i === userBucketIdx ? '#059669' : 'rgba(99, 102, 241, 0.5)'
+                ),
+                borderWidth: 1,
+                borderRadius: 4,
+            },
+        ],
+    };
+});
+
+const distributionChartOptions = computed(() => ({
+    responsive: true,
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            callbacks: {
+                title: (items) => {
+                    const idx = items[0].dataIndex;
+                    const isUser = result.value?.gross >= WORLD_BUCKETS[idx].min &&
+                        (WORLD_BUCKETS[idx].max === Infinity || result.value?.gross < WORLD_BUCKETS[idx].max);
+                    return isUser
+                        ? `${WORLD_BUCKETS[idx].label} ← ${t('your_income_bracket')}`
+                        : WORLD_BUCKETS[idx].label;
+                },
+                label: (ctx) => `${ctx.parsed.y.toFixed(1)}% ${t('world_population_pct')}`,
+            },
+        },
+    },
+    scales: {
+        x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 } },
+        },
+        y: {
+            title: {
+                display: true,
+                text: t('world_population_pct'),
+                font: { size: 11 },
+            },
+            ticks: {
+                callback: (v) => `${v}%`,
+                font: { size: 11 },
+            },
+        },
+    },
+}));
 
 const jsonLd = computed(() => JSON.stringify({
     '@context': 'https://schema.org',
@@ -460,15 +671,29 @@ const jsonLd = computed(() => JSON.stringify({
     offers: {
         '@type': 'Offer',
         price: '0',
-        priceCurrency: 'EUR',
+        priceCurrency: currentCurrency.value,
     },
 }));
 
 let autoCalculateTimer = null;
 let latestRequestId = 0;
 
-function formatNumber(n) {
-    return Number(n).toLocaleString(locale.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatCurrency(n) {
+    return formatCurrencyValue(n, currentCurrency.value, locale.value);
+}
+
+const CALC_STATE_KEY = 'calc_form_state';
+
+function handleLocaleSwitch(lang) {
+    sessionStorage.setItem(CALC_STATE_KEY, JSON.stringify({
+        amount: amount.value,
+        mode: mode.value,
+        inputPeriod: inputPeriod.value,
+        age: age.value,
+        children: children.value,
+        selectedSalariesPerYear: selectedSalariesPerYear.value,
+    }));
+    switchLocale(lang);
 }
 
 function onCountryChange() {
@@ -567,6 +792,21 @@ watch([amount, mode, inputPeriod, age, children, taxExemptionRate, selectedSalar
 let jsonLdScript = null;
 
 onMounted(() => {
+    // Restore form state after locale switch
+    const saved = sessionStorage.getItem(CALC_STATE_KEY);
+    if (saved) {
+        try {
+            const s = JSON.parse(saved);
+            if (s.amount != null) amount.value = s.amount;
+            if (s.mode) mode.value = s.mode;
+            if (s.inputPeriod) inputPeriod.value = s.inputPeriod;
+            if (s.age != null) age.value = s.age;
+            if (s.children != null) children.value = s.children;
+            if (s.selectedSalariesPerYear != null) selectedSalariesPerYear.value = s.selectedSalariesPerYear;
+        } catch {}
+        sessionStorage.removeItem(CALC_STATE_KEY);
+    }
+
     jsonLdScript = document.createElement('script');
     jsonLdScript.type = 'application/ld+json';
     jsonLdScript.textContent = jsonLd.value;

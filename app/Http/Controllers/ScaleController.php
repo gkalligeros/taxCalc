@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TaxScale;
+use App\Support\CurrencyHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,7 +38,10 @@ class ScaleController extends Controller
             'salaries_per_year' => 'required|integer|in:12,14',
         ]);
 
-        TaxScale::create($validated);
+        TaxScale::create([
+            ...$validated,
+            'currency' => CurrencyHelper::forCountry($validated['country_code']),
+        ]);
 
         return redirect()->route('admin.scales.index')->with('success', __('messages.scale_created'));
     }
@@ -61,7 +65,10 @@ class ScaleController extends Controller
             'salaries_per_year' => 'required|integer|in:12,14',
         ]);
 
-        $scale->update($validated);
+        $scale->update([
+            ...$validated,
+            'currency' => CurrencyHelper::forCountry($validated['country_code']),
+        ]);
 
         return redirect()->route('admin.scales.show', $scale)->with('success', __('messages.scale_updated'));
     }
