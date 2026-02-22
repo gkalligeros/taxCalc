@@ -128,7 +128,7 @@
                             <option v-for="s in availableStates" :key="s" :value="s">{{ s }}</option>
                         </select>
                     </div>
-                    <div>
+                    <div v-if="scaleHasOverrides">
                         <label class="block text-xs text-gray-500 mb-1">{{ t('age') }}</label>
                         <input
                             v-model.number="age"
@@ -138,7 +138,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                         />
                     </div>
-                    <div>
+                    <div v-if="scaleHasOverrides">
                         <label class="block text-xs text-gray-500 mb-1">{{ t('dependent_children') }}</label>
                         <input
                             v-model.number="children"
@@ -493,6 +493,9 @@ const selectedCountry = ref(props.selectedCountry || 'GR');
 const selectedState = ref(props.selectedState || null);
 const currentCurrency = computed(() =>
     props.activeScale?.currency ?? COUNTRY_CURRENCIES[selectedCountry.value] ?? 'EUR'
+);
+const scaleHasOverrides = computed(() =>
+    props.activeScale?.brackets?.some(b => b.overrides?.length > 0) ?? false
 );
 const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value, locale.value));
 const age = ref(31);
